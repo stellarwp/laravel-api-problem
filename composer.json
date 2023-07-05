@@ -16,7 +16,10 @@
         "chat": "https://gitter.im/API-Skeletons/open-source"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "autoload": {
         "psr-4": {
