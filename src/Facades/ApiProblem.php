@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static array toArray()
- * @method static JsonResponse response(string ...$params)
+ * @method static JsonResponse response(mixed ...$params)
  * @method static \ApiSkeletons\Laravel\ApiProblem\ApiProblem setDetailIncludesStackTrace(bool $flag)
  */
 class ApiProblem extends Facade
