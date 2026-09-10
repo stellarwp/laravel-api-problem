@@ -15,11 +15,6 @@ newer; CI verifies PHP 8.3 and 8.5 with PHPUnit 12.
 
 ## Installation
 
-Until the breaking support cutover is merged, configure the
-`https://github.com/stellarwp/laravel-api-problem` Composer VCS repository
-and require `api-skeletons/laravel-api-problem:dev-feat/upgrade-to-laravel-13`.
-The facade, service-provider discovery, and problem response format are unchanged.
-
 Run the following to install this library using [Composer](https://getcomposer.org/):
 
 ```bash
