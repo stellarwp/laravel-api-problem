@@ -25,6 +25,8 @@ use function trim;
 
 /**
  * Object describing an API-Problem payload.
+ *
+ * @psalm-api
  */
 class ApiProblem
 {
@@ -36,7 +38,7 @@ class ApiProblem
     /**
      * Additional details to include in report.
      *
-     * @var string[]
+     * @var array<array-key, mixed>
      */
     protected array $additionalDetails = [];
 
@@ -131,7 +133,7 @@ class ApiProblem
      * if the status matches any known, the title field will be selected
      * from $problemStatusTitles as a result.
      *
-     * @param string[] $additional
+     * @param array<array-key, mixed> $additional
      */
     public function __construct(int|string $status, string|Throwable $detail, ?string $type = null, ?string $title = null, array $additional = [])
     {
@@ -200,7 +202,7 @@ class ApiProblem
     /**
      * Cast to an array.
      *
-     * @return string[]
+     * @return array<array-key, mixed>
      */
     public function toArray(): array
     {
@@ -224,8 +226,6 @@ class ApiProblem
     // phpcs:ignore SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
     public function response(...$params): JsonResponse
     {
-        $apProblem = null;
-
         if ($this->getStatus()) {
             // Use current object
             $apiProblem = $this;

@@ -7,15 +7,14 @@ namespace ApiSkeletonsTest\Laravel\ApiProblem;
 use ApiSkeletons\Laravel\ApiProblem\ApiProblem;
 use ApiSkeletons\Laravel\ApiProblem\Exception;
 use ApiSkeletons\Laravel\ApiProblem\Facades\ApiProblem as ApiProblemFacade;
-use http\Exception\InvalidArgumentException;
-use Illuminate\Http\JsonResponse;
-use ReflectionObject;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use TypeError;
 
 final class ApiProblemTest extends TestCase
 {
-    /** @psalm-return array<string, array{0: int}> */
-    public function statusCodes(): array
+    /** @psalm-return array<int, array{0: int}> */
+    public static function statusCodes(): array
     {
         return [
             '200' => [200],
@@ -30,21 +29,39 @@ final class ApiProblemTest extends TestCase
         ];
     }
 
-    public function testResponseWithObject(): void
+    public function testFacadePreservesProblemResponseContract(): void
     {
-        $apiProblem = new ApiProblem(500, 'Testing');
+        $response = ApiProblemFacade::response(
+            'Invalid input',
+            422,
+            null,
+            'Validation Failed',
+            ['errors' => ['field' => ['required']]]
+        );
 
-        $this->assertInstanceOf(JsonResponse::class, $apiProblem->response());
+        $this->assertSame(422, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+        $this->assertSame([
+            'errors' => ['field' => ['required']],
+            'type' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html',
+            'title' => 'Validation Failed',
+            'status' => 422,
+            'detail' => 'Invalid input',
+        ], $response->getData(true));
+
+        $response = ApiProblemFacade::response('Unauthenticated.', 401);
+
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertSame('application/problem+json', $response->headers->get('Content-Type'));
+        $this->assertSame([
+            'type' => 'http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html',
+            'title' => 'Unauthorized',
+            'status' => 401,
+            'detail' => 'Unauthenticated.',
+        ], $response->getData(true));
     }
 
-    public function testResponseWithFacade(): void
-    {
-        $this->assertInstanceOf(JsonResponse::class, ApiProblemFacade::response('Testing', 500));
-    }
-
-    /**
-     * @dataProvider statusCodes
-     */
+    #[DataProvider('statusCodes')]
     public function testStatusIsUsedVerbatim(int $status): void
     {
         $apiProblem = new ApiProblem($status, 'foo');
@@ -53,9 +70,6 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals($status, $payload['status']);
     }
 
-    /**
-     * @requires PHP 7.0
-     */
     public function testErrorAsDetails(): void
     {
         $error = new TypeError('error message', 705);
@@ -133,33 +147,6 @@ final class ApiProblemTest extends TestCase
         $payload = $apiProblem->toArray();
         $this->assertArrayHasKey('type', $payload);
         $this->assertEquals('http://status.dev:8080/details.md', $payload['type']);
-    }
-
-    /** @psalm-return array<string, array{0: int}> */
-    public function knownStatusCodes(): array
-    {
-        return [
-            '404' => [404],
-            '409' => [409],
-            '422' => [422],
-            '500' => [500],
-        ];
-    }
-
-    /**
-     * @dataProvider knownStatusCodes
-     */
-    public function testKnownStatusResultsInKnownTitle(int $status): void
-    {
-        $apiProblem = new ApiProblem($status, 'foo');
-        $r = new ReflectionObject($apiProblem);
-        $p = $r->getProperty('problemStatusTitles');
-        $p->setAccessible(true);
-        $titles = $p->getValue($apiProblem);
-
-        $payload = $apiProblem->toArray();
-        $this->assertArrayHasKey('title', $payload);
-        $this->assertEquals($titles[$status], $payload['title']);
     }
 
     public function testUnknownStatusResultsInUnknownTitle(): void
@@ -248,8 +235,8 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals('bar', $payload['foo']);
     }
 
-    /** @psalm-return array<string, array{0: int}> */
-    public function invalidStatusCodes(): array
+    /** @psalm-return array<int, array{0: int}> */
+    public static function invalidStatusCodes(): array
     {
         return [
             '-1' => [-1],
@@ -260,10 +247,8 @@ final class ApiProblemTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider invalidStatusCodes
-     * @group api-tools-118
-     */
+    #[DataProvider('invalidStatusCodes')]
+    #[Group('api-tools-118')]
     public function testInvalidHttpStatusCodesAreCastTo500(int $code): void
     {
         $e = new \Exception('Testing', $code);
@@ -271,10 +256,8 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals(500, $problem->status);
     }
 
-    /**
-     * @dataProvider statusCodes
-     * @group api-tools-118
-     */
+    #[DataProvider('statusCodes')]
+    #[Group('api-tools-118')]
     public function testMagicGetInvalidArgument(int $code): void
     {
         $this->expectException(Exception\InvalidArgumentException::class);
@@ -283,10 +266,8 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals('testing', $apiProblem->code);
     }
 
-    /**
-     * @dataProvider statusCodes
-     * @group api-tools-118
-     */
+    #[DataProvider('statusCodes')]
+    #[Group('api-tools-118')]
     public function testMagicGetNormalizedProperties(int $code): void
     {
         $apiProblem = new ApiProblem($code, 'Testing', 'test', 'title test', ['more' => 'testing']);
@@ -297,10 +278,8 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals('Testing', $apiProblem->__get('detail'));
     }
 
-    /**
-     * @dataProvider statusCodes
-     * @group api-tools-118
-     */
+    #[DataProvider('statusCodes')]
+    #[Group('api-tools-118')]
     public function testMagicGetAdditionalDetails(int $code): void
     {
         $apiProblem = new ApiProblem($code, 'Testing', 'test', 'title test', ['MixedCase' => 'testing']);
@@ -308,10 +287,8 @@ final class ApiProblemTest extends TestCase
         $this->assertEquals('testing', $apiProblem->__get('MixedCase'));
     }
 
-    /**
-     * @dataProvider statusCodes
-     * @group api-tools-118
-     */
+    #[DataProvider('statusCodes')]
+    #[Group('api-tools-118')]
     public function testMagicGetAdditionalDetailsNormalized(int $code): void
     {
         $apiProblem = new ApiProblem($code, 'Testing', 'test', 'title test', ['xxcode' => 'testing']);

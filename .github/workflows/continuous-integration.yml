@@ -9,34 +9,25 @@ on:
     branches:
       - "*.x"
       - "main"
+      - "feat/upgrade-to-laravel-13"
 
 jobs:
   phpunit:
     name: "PHPUnit"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
 
     strategy:
       fail-fast: false
       matrix:
         php-version:
-          - "8.0"
-          - "8.1"
+          - "8.3"
+          - "8.5"
         dependencies:
           - "highest"
-        optional-dependencies:
-          - true
-          - false
-        include:
-          -   php-version: "8.0"
-              dependencies: "lowest"
-              optional-dependencies: false
-          -   php-version: "8.0"
-              dependencies: "lowest"
-              optional-dependencies: true
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v7"
         with:
           fetch-depth: 2
 
@@ -49,46 +40,38 @@ jobs:
           extensions: "pdo_mysql"
 
       - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@v1"
-        if: "! startsWith(matrix.php-version, '8')"
+        uses: "ramsey/composer-install@v4"
         with:
           dependency-versions: "${{ matrix.dependencies }}"
-          composer-options: "--prefer-dist --no-suggest"
-
-      - name: "Install dependencies with Composer (--ignore-platform-req=php)"
-        uses: "ramsey/composer-install@v1"
-        if: "startsWith(matrix.php-version, '8')"
-        with:
-          dependency-versions: "${{ matrix.dependencies }}"
-          composer-options: "--prefer-dist --no-suggest --ignore-platform-req=php"
+          composer-options: "--prefer-dist"
 
       - name: "Run PHPUnit"
-        run: "vendor/bin/phpunit --coverage-clover=coverage.xml"
+        run: "vendor/bin/phpunit --display-all-issues --fail-on-warning --fail-on-phpunit-deprecation --coverage-clover=coverage.xml"
 
       - name: "Upload coverage file"
-        uses: "actions/upload-artifact@v2"
+        uses: "actions/upload-artifact@v4"
         with:
-          name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}-${{ matrix.dbal-version }}.coverage"
+          name: "phpunit-${{ matrix.php-version }}-${{ matrix.dependencies }}.coverage"
           path: "coverage.xml"
 
   upload_coverage:
     name: "Upload coverage to Codecov"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-latest"
     needs:
       - "phpunit"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: "actions/checkout@v7"
         with:
           fetch-depth: 2
 
       - name: "Download coverage files"
-        uses: "actions/download-artifact@v2"
+        uses: "actions/download-artifact@v4"
         with:
           path: "reports"
 
       - name: "Upload to Codecov"
-        uses: "codecov/codecov-action@v2"
+        uses: "codecov/codecov-action@v5"
         with:
           directory: "reports"

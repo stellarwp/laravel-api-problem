@@ -2,14 +2,23 @@
 
 [![Build Status](https://github.com/API-Skeletons/laravel-api-problem/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/API-Skeletons/laravel-api-problem/actions/workflows/continuous-integration.yml?query=branch%3Amain)
 [![Code Coverage](https://codecov.io/gh/API-Skeletons/laravel-api-problem/branch/main/graphs/badge.svg)](https://codecov.io/gh/API-Skeletons/laravel-api-problem/branch/main)
-[![PHP Version](https://img.shields.io/badge/PHP-8.0%2b-blue)](https://img.shields.io/badge/PHP-8.0%2b-blue)
+[![PHP Version](https://img.shields.io/badge/PHP-8.3%2b-blue)](https://img.shields.io/badge/PHP-8.3%2b-blue)
 [![Total Downloads](https://poser.pugx.org/api-skeletons/laravel-api-problem/downloads)](//packagist.org/packages/api-skeletons/laravel-api-problem)
 [![License](https://poser.pugx.org/api-skeletons/laravel-api-problem/license)](//packagist.org/packages/api-skeletons/laravel-api-problem)
 
 This repository implements [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807.html)
 "Problem Details for HTTP APIs" for Laravel.
 
+This fork supports Laravel 13 and PHP 8.3 or newer only. Laravel 8–10 and
+PHP 8.0–8.2 are no longer supported. Development requires PHP 8.3.16 or
+newer; CI verifies PHP 8.3 and 8.5 with PHPUnit 12.
+
 ## Installation
+
+Until the breaking support cutover is merged, configure the
+`https://github.com/stellarwp/laravel-api-problem` Composer VCS repository
+and require `api-skeletons/laravel-api-problem:dev-feat/upgrade-to-laravel-13`.
+The facade, service-provider discovery, and problem response format are unchanged.
 
 Run the following to install this library using [Composer](https://getcomposer.org/):
 
@@ -64,7 +73,7 @@ response(
 When creating an ApiProblem object directly, the first two parameters are swapped.
 The reason for this is the constructor for the original object remains unchanged
 and the `response()` function is modified to match the standard
-[Laravel response](https://laravel.com/docs/8.x/responses#response-objects)
+[Laravel response](https://laravel.com/docs/13.x/responses#response-objects)
 format.
 
 ```php
