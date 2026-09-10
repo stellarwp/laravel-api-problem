@@ -60,6 +60,10 @@ jobs:
     needs:
       - "phpunit"
 
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v7"
@@ -75,3 +79,5 @@ jobs:
         uses: "codecov/codecov-action@v5"
         with:
           directory: "reports"
+          fail_ci_if_error: true
+          use_oidc: true
