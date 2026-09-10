@@ -6,12 +6,15 @@ namespace ApiSkeletons\Laravel\ApiProblem;
 
 use Doctrine\Instantiator\Instantiator;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use Override;
 
+/** @psalm-api */
 class ServiceProvider extends LaravelServiceProvider
 {
     /**
      * Register any application services.
      */
+    #[Override]
     public function register(): void
     {
     }

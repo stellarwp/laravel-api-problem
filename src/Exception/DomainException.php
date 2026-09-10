@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace ApiSkeletons\Laravel\ApiProblem\Exception;
 
+use Override;
 use Traversable;
 
+/** @psalm-api */
 class DomainException extends \DomainException implements
     ExceptionInterface,
     ProblemExceptionInterface
 {
     protected ?string $type = null;
 
-    /** @var string[] */
+    /** @var array<array-key, mixed> */
     protected array $details = [];
 
     protected ?string $title = null;
 
     /**
-     * @param string[] $details
+     * @param array<array-key, mixed> $details
      */
     public function setAdditionalDetails(array $details): self
     {
@@ -41,16 +43,19 @@ class DomainException extends \DomainException implements
         return $this;
     }
 
+    #[Override]
     public function getAdditionalDetails(): Traversable|array|null
     {
         return $this->details;
     }
 
+    #[Override]
     public function getType(): ?string
     {
         return $this->type;
     }
 
+    #[Override]
     public function getTitle(): ?string
     {
         return $this->title;
